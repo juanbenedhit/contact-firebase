@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "893488256004",
+    "project_id": "contact-app-c9bfc",
+    "storage_bucket": "contact-app-c9bfc.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:893488256004:android:841836a0179ecf19bc5151",
+        "android_client_info": {
+          "package_name": "com.example.contact_clone"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "893488256004-n517pb530jpq4qg9bd0prv28fbsol6sm.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDo-UchBsj4S4Rm5FBSvLWcZ7Y5yDUW01g"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "893488256004-n517pb530jpq4qg9bd0prv28fbsol6sm.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
