@@ -92,7 +92,7 @@ class _EditContactPageState extends State<EditContactPage> {
         Navigator.of(context).pop(); // Kembali ke halaman sebelumnya
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Edit Contact Succes'),
+            content: Text('Kontak Berhasil Diperbarui'),
             backgroundColor: Colors.green,
           ),
         );
@@ -199,17 +199,12 @@ class _EditContactPageState extends State<EditContactPage> {
 
   @override
   Widget build(BuildContext context) {
-    double screenWidth = MediaQuery.of(context).size.width;
-    double horizontalPadding = screenWidth * 0.1;
-    const Color darkBlueColor = Color(0xFF003366);
-    const double avatarSpacing = 20.0;
-
     // Tombol Save atau Delete tidak aktif jika salah satu proses sedang berjalan
     final bool buttonsEnabled = !_isSaving && !_isDeleting;
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Edit Contact ${widget.user.firstName}'), // Judul dinamis
+        title: Text('Edit ${widget.user.firstName}'), // Judul dinamis
         actions: [
           if (_isSaving)
             const Padding(
@@ -232,121 +227,97 @@ class _EditContactPageState extends State<EditContactPage> {
               child: TextButton(
                 onPressed: buttonsEnabled ? _updateContact : null,
                 style: TextButton.styleFrom(
-                  foregroundColor: Colors.white,
-                  backgroundColor: darkBlueColor,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 20.0,
-                    vertical: 10.0,
-                  ),
-                  textStyle: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 15,
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30.0),
-                  ),
+                  foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                  backgroundColor: Theme.of(context).colorScheme.primary,
+                  // ... (kode style lainnya)
                 ),
                 child: const Text('SAVE'),
               ),
             ),
         ],
       ),
-      body: Center(
-        child: SingleChildScrollView(
-          padding: EdgeInsets.symmetric(
-            vertical: avatarSpacing,
-            horizontal: horizontalPadding,
-          ),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: <Widget>[
-                const CircleAvatar(
-                  radius: 50,
-                  backgroundColor: Colors.grey,
-                  child: Icon(Icons.person, size: 60, color: Colors.white),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16.0),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: <Widget>[
+              const SizedBox(height: 20),
+              const CircleAvatar(
+                radius: 50,
+                child: Icon(Icons.person, size: 60),
+              ),
+              const SizedBox(height: 30),
+              TextFormField(
+                controller: _firstNameController,
+                decoration: const InputDecoration(
+                  labelText: 'Nama Depan',
+                  border: OutlineInputBorder(),
+                  prefixIcon: Icon(Icons.person_outline),
                 ),
-                const SizedBox(height: avatarSpacing),
-                TextFormField(
-                  controller: _firstNameController,
-                  decoration: const InputDecoration(
-                    labelText: 'First Name',
-                    border: OutlineInputBorder(),
-                    prefixIcon: Icon(Icons.person_outline),
-                  ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'First Name cannot be empty';
-                    }
-                    return null;
-                  },
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Nama depan tidak boleh kosong';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _lastNameController,
+                decoration: const InputDecoration(
+                  labelText: 'Nama Belakang',
+                  border: OutlineInputBorder(),
+                  prefixIcon: Icon(Icons.person_outline),
                 ),
-                const SizedBox(height: 16),
-                TextFormField(
-                  controller: _lastNameController,
-                  decoration: const InputDecoration(
-                    labelText: 'Last Name',
-                    border: OutlineInputBorder(),
-                    prefixIcon: Icon(Icons.person_outline),
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _emailController,
+                decoration: const InputDecoration(
+                  labelText: 'Email',
+                  border: OutlineInputBorder(),
+                  prefixIcon: Icon(Icons.email_outlined),
+                ),
+                keyboardType: TextInputType.emailAddress,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Email tidak boleh kosong';
+                  }
+                  if (!RegExp(
+                    r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+",
+                  ).hasMatch(value)) {
+                    return 'Format email tidak valid';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _phoneController,
+                decoration: const InputDecoration(
+                  labelText: 'Nomor Telepon',
+                  border: OutlineInputBorder(),
+                  prefixIcon: Icon(Icons.phone_outlined),
+                ),
+                keyboardType: TextInputType.phone,
+              ),
+              const SizedBox(height: 32), // Jarak sebelum tombol delete
+              if (_isDeleting)
+                const Center(child: CircularProgressIndicator())
+              else
+                FilledButton.icon(
+                  icon: const Icon(Icons.delete_forever_outlined),
+                  label: const Text('Hapus Kontak Ini'),
+                  onPressed: buttonsEnabled ? _deleteContact : null,
+                  style: FilledButton.styleFrom(
+                    backgroundColor: Theme.of(context).colorScheme.error,
+                    foregroundColor: Theme.of(context).colorScheme.onError,
                   ),
                 ),
-                const SizedBox(height: 16),
-                TextFormField(
-                  controller: _emailController,
-                  decoration: const InputDecoration(
-                    labelText: 'Email',
-                    border: OutlineInputBorder(),
-                    prefixIcon: Icon(Icons.email_outlined),
-                  ),
-                  keyboardType: TextInputType.emailAddress,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Email cannot be empty';
-                    }
-                    if (!RegExp(
-                      r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+",
-                    ).hasMatch(value)) {
-                      return 'Email not valid';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 16),
-                TextFormField(
-                  controller: _phoneController,
-                  decoration: const InputDecoration(
-                    labelText: 'Phone Number',
-                    border: OutlineInputBorder(),
-                    prefixIcon: Icon(Icons.phone_outlined),
-                  ),
-                  keyboardType: TextInputType.phone,
-                ),
-                const SizedBox(height: 32), // Jarak sebelum tombol delete
-                if (_isDeleting)
-                  const Center(child: CircularProgressIndicator())
-                else
-                  ElevatedButton.icon(
-                    icon: const Icon(Icons.delete_forever_outlined),
-                    label: const Text('Delete This Contact'),
-                    onPressed: buttonsEnabled ? _deleteContact : null,
-                    style: ElevatedButton.styleFrom(
-                      foregroundColor: Colors.white,
-                      backgroundColor: Colors.red[700],
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      textStyle: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20.0),
-                      ),
-                    ),
-                  ),
-                const SizedBox(height: 16), // Jarak di bawah tombol delete
-              ],
-            ),
+              const SizedBox(height: 16), // Jarak di bawah tombol delete
+            ],
           ),
         ),
       ),

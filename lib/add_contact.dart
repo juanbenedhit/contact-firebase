@@ -64,7 +64,7 @@ class _AddContactPageState extends State<AddContactPage> {
         Navigator.of(context).pop(); // Tutup halaman tambah kontak
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Contact Created!'),
+            content: Text('Kontak Berhasil Dibuat!'),
             backgroundColor: Colors.green,
           ),
         );
@@ -73,7 +73,7 @@ class _AddContactPageState extends State<AddContactPage> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed To Create Contact. Error: $e'),
+            content: Text('Gagal membuat kontak. Error: $e'),
             backgroundColor: Colors.red,
           ),
         );
@@ -89,13 +89,6 @@ class _AddContactPageState extends State<AddContactPage> {
 
   @override
   Widget build(BuildContext context) {
-    double screenWidth = MediaQuery.of(context).size.width;
-    double horizontalPadding =
-        screenWidth * 0.1; // Misalnya, 10% dari lebar layar di setiap sisi
-
-    const Color darkBlueColor = Color(0xFF003366);
-    const double avatarSpacing = 20.0; // Definisikan jarak yang sama
-
     return Scaffold(
       appBar: AppBar(
         title: const Text('Tambah Kontak Baru'),
@@ -120,113 +113,83 @@ class _AddContactPageState extends State<AddContactPage> {
                 child: TextButton(
                   onPressed: _saveContact,
                   style: TextButton.styleFrom(
-                    foregroundColor: Colors.white,
-                    backgroundColor: darkBlueColor,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 20.0,
-                      vertical: 10.0,
-                    ),
-                    textStyle: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 15,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30.0),
-                    ),
+                    foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                    backgroundColor: Theme.of(context).colorScheme.primary,
+                    // ... (kode style lainnya)
                   ),
                   child: const Text('SAVE'),
                 ),
               ),
         ],
       ),
-      body: Center(
-        child: SingleChildScrollView(
-          padding: EdgeInsets.symmetric(
-            vertical: avatarSpacing,
-            horizontal: horizontalPadding,
-          ),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: <Widget>[
-                // --- AWAL: CircleAvatar untuk representasi foto profil ---
-                const CircleAvatar(
-                  radius: 50, // Sesuaikan ukuran radius sesuai keinginan
-                  backgroundColor:
-                      Colors.grey, // Warna latar belakang jika tidak ada gambar
-                  // Anda bisa menampilkan ikon default jika tidak ada gambar
-                  child: Icon(
-                    Icons.person,
-                    size: 60, // Sesuaikan ukuran ikon
-                    color: Colors.white, // Warna ikon
-                  ),
-                  // Jika Anda memiliki URL gambar statis, Anda bisa menggunakan:
-                  // backgroundImage: NetworkImage('URL_GAMBAR_ANDA_DISINI'),
-                  // Atau jika gambar dari assets:
-                  // backgroundImage: AssetImage('assets/nama_gambar.png'),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16.0),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: <Widget>[
+              const SizedBox(height: 20),
+              const CircleAvatar(
+                radius: 50,
+                child: Icon(Icons.person, size: 60),
+              ),
+              const SizedBox(height: 30),
+              TextFormField(
+                controller: _firstNameController,
+                decoration: const InputDecoration(
+                  labelText: 'Nama Depan',
+                  border: OutlineInputBorder(),
+                  prefixIcon: Icon(Icons.person_outline),
                 ),
-                const SizedBox(
-                  height: avatarSpacing,
-                ), // Jarak antara avatar dan form
-                // --- AKHIR: CircleAvatar ---
-                TextFormField(
-                  controller: _firstNameController,
-                  decoration: const InputDecoration(
-                    labelText: 'First Name',
-                    border: OutlineInputBorder(),
-                    prefixIcon: Icon(Icons.person_outline),
-                  ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'First Name cannot be empty';
-                    }
-                    return null;
-                  },
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Nama depan tidak boleh kosong';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _lastNameController,
+                decoration: const InputDecoration(
+                  labelText: 'Nama Belakang',
+                  border: OutlineInputBorder(),
+                  prefixIcon: Icon(Icons.person_outline),
                 ),
-                const SizedBox(height: 16),
-                TextFormField(
-                  controller: _lastNameController,
-                  decoration: const InputDecoration(
-                    labelText: 'Last Name',
-                    border: OutlineInputBorder(),
-                    prefixIcon: Icon(Icons.person_outline),
-                  ),
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _emailController,
+                decoration: const InputDecoration(
+                  labelText: 'Email',
+                  border: OutlineInputBorder(),
+                  prefixIcon: Icon(Icons.email_outlined),
                 ),
-                const SizedBox(height: 16),
-                TextFormField(
-                  controller: _emailController,
-                  decoration: const InputDecoration(
-                    labelText: 'Email',
-                    border: OutlineInputBorder(),
-                    prefixIcon: Icon(Icons.email_outlined),
-                  ),
-                  keyboardType: TextInputType.emailAddress,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Email cannot be empty';
-                    }
-                    if (!RegExp(
-                      r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+",
-                    ).hasMatch(value)) {
-                      return 'Email not valid';
-                    }
-                    return null;
-                  },
+                keyboardType: TextInputType.emailAddress,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Email tidak boleh kosong';
+                  }
+                  if (!RegExp(
+                    r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+",
+                  ).hasMatch(value)) {
+                    return 'Format email tidak valid';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _phoneController,
+                decoration: const InputDecoration(
+                  labelText: 'Nomor Telepon',
+                  border: OutlineInputBorder(),
+                  prefixIcon: Icon(Icons.phone_outlined),
                 ),
-                const SizedBox(height: 16),
-                TextFormField(
-                  controller: _phoneController,
-                  decoration: const InputDecoration(
-                    labelText: 'Phone Number',
-                    border: OutlineInputBorder(),
-                    prefixIcon: Icon(Icons.phone_outlined),
-                  ),
-                  keyboardType: TextInputType.phone,
-                ),
-              ],
-            ),
+                keyboardType: TextInputType.phone,
+              ),
+            ],
           ),
         ),
       ),

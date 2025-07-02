@@ -21,8 +21,11 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Aplikasi Kontak',
-      theme: ThemeData(useMaterial3: true, colorSchemeSeed: Colors.blue),
-      // memnggunakna material3 dan skema warna biru
+      theme: ThemeData(
+        useMaterial3: true,
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.green),
+      ),
+      // memnggunakna material3 dan skema warna hijau
       home: const HomePage(),
       // menampilkan halaman utama
     );

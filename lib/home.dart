@@ -66,6 +66,10 @@ class _HomePageState extends State<HomePage> {
         }
 
         if (tempUsers.isNotEmpty) {
+          tempUsers.sort(
+            (a, b) =>
+                a.firstName.toLowerCase().compareTo(b.firstName.toLowerCase()),
+          );
           setState(() {
             _users = tempUsers;
             _filteredUsers = _users;
@@ -155,9 +159,8 @@ class _HomePageState extends State<HomePage> {
                   borderSide: BorderSide.none,
                 ),
                 filled: true,
-                fillColor: Theme.of(
-                  context,
-                ).colorScheme.surfaceContainerHighest.withAlpha(128),
+                fillColor:
+                    Theme.of(context).colorScheme.surfaceContainerHighest,
                 contentPadding: const EdgeInsets.symmetric(
                   vertical: 0,
                   horizontal: 20,
@@ -235,16 +238,18 @@ class _HomeBottomAppBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final Color inactiveIconColor = Theme.of(
-      context,
-    ).colorScheme.onSurface.withOpacity(0.6);
+    final colorScheme = Theme.of(context).colorScheme;
+    final bool isLightMode = Theme.of(context).brightness == Brightness.light;
+    Color bottomAppBarColor = colorScheme.surface;
+    Color transparentBottomAppBarColor = bottomAppBarColor.withOpacity(0.9);
 
     return BottomAppBar(
       shape: shape,
-      color: Theme.of(context).colorScheme.surface,
-      elevation: 2,
+      color: transparentBottomAppBarColor,
+      elevation: 0,
+      height: 64,
       child: IconTheme(
-        data: IconThemeData(color: Theme.of(context).colorScheme.primary),
+        data: IconThemeData(color: colorScheme.onSurfaceVariant),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: <Widget>[
@@ -269,17 +274,6 @@ class _HomeBottomAppBar extends StatelessWidget {
                   // Mungkin tidak perlu aksi jika sudah di halaman ini
                 },
               ),
-            ),
-            IconButton(
-              tooltip: 'Favorite',
-              icon: Icon(Icons.favorite, color: inactiveIconColor),
-              onPressed: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Fitur Favorit belum diimplementasikan'),
-                  ),
-                );
-              },
             ),
           ],
         ),
