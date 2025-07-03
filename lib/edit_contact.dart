@@ -1,15 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'user.dart'; // Pastikan model User Anda sudah ada
+// mengimport package material dan cloud_firestore
 
-// Callback untuk memberi tahu halaman sebelumnya bahwa ada perubahan (edit/delete)
-// dan mungkin perlu me-refresh daftar kontak.
+import 'user.dart';
+// mengimport file user
+
+// Callback agar tahu ada perubahan
 typedef ContactAlteredCallback = void Function();
 
+// class editcontact
 class EditContactPage extends StatefulWidget {
-  final User user; // Kontak yang akan diedit
+  final User user;
+  // user yang akan diedit
   final ContactAlteredCallback onContactAltered;
 
+  // constructor editcontact
   const EditContactPage({
     super.key,
     required this.user,
@@ -20,10 +25,14 @@ class EditContactPage extends StatefulWidget {
   State<EditContactPage> createState() => _EditContactPageState();
 }
 
+// clas edtcontact state
 class _EditContactPageState extends State<EditContactPage> {
+  // koneksi dengan firebase
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final String _collectionName = 'contacts'; // Nama koleksi di Firestore
+  // Nama koleksi di Firestore
+  final String _collectionName = 'contacts';
 
+  // variabel untuk edit form
   final _formKey = GlobalKey<FormState>();
   late TextEditingController _firstNameController;
   late TextEditingController _lastNameController;
@@ -33,10 +42,11 @@ class _EditContactPageState extends State<EditContactPage> {
   bool _isSaving = false;
   bool _isDeleting = false;
 
+  //
   @override
   void initState() {
     super.initState();
-    // Inisialisasi controller dengan data kontak yang ada
+    // Inisiasasi controller dengan data kontak yang ada
     _firstNameController = TextEditingController(text: widget.user.firstName);
     _lastNameController = TextEditingController(text: widget.user.lastName);
     _emailController = TextEditingController(text: widget.user.email);
@@ -45,6 +55,7 @@ class _EditContactPageState extends State<EditContactPage> {
 
   @override
   void dispose() {
+    // membersihkan controller
     _firstNameController.dispose();
     _lastNameController.dispose();
     _emailController.dispose();
@@ -52,6 +63,7 @@ class _EditContactPageState extends State<EditContactPage> {
     super.dispose();
   }
 
+  // untuk mengecek apakah form valid
   Future<void> _updateContact() async {
     if (!_formKey.currentState!.validate()) {
       return;
@@ -59,54 +71,52 @@ class _EditContactPageState extends State<EditContactPage> {
     if (widget.user.id == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Error: ID Kontak tidak ditemukan.'),
+          content: Text('Error: ID not found'),
           backgroundColor: Colors.red,
         ),
       );
       return;
     }
 
+    // menampilkan loading
     setState(() {
       _isSaving = true;
     });
 
+    // mengambil data
     try {
-      String phoneText = _phoneController.text.trim();
-      num? phoneNumberForFirestore;
-      if (phoneText.isNotEmpty) {
-        phoneNumberForFirestore = num.tryParse(phoneText);
-      }
-
+      // mengupdate data
       await _firestore.collection(_collectionName).doc(widget.user.id).update({
         'firstName': _firstNameController.text.trim(),
         'lastName': _lastNameController.text.trim(),
         'email': _emailController.text.trim(),
-        'phone': phoneNumberForFirestore,
-        // Anda mungkin ingin memperbarui field lain jika ada,
-        // misalnya 'ownerId' jika itu bisa diubah.
+        'phone': _phoneController.text.trim(),
       });
 
-      widget.onContactAltered(); // Panggil callback
+      widget.onContactAltered();
 
+      //jika berhasil maka kembalikan ke halaman sebelumnya dan menampilkan snackbar
       if (mounted) {
-        Navigator.of(context).pop(); // Kembali ke halaman sebelumnya
+        Navigator.of(context).pop();
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Kontak Berhasil Diperbarui'),
+            content: Text('Contact Edited Successfully'),
             backgroundColor: Colors.green,
           ),
         );
       }
     } catch (e) {
+      // jika gagal maka tampilkan snackbar
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Gagal memperbarui kontak: $e'),
+            content: Text('Failed to update contact: $e'),
             backgroundColor: Colors.red,
           ),
         );
       }
     } finally {
+      // menyembunyikan loading
       if (mounted) {
         setState(() {
           _isSaving = false;
@@ -115,38 +125,42 @@ class _EditContactPageState extends State<EditContactPage> {
     }
   }
 
+  // menghapus contact
   Future<void> _deleteContact() async {
     if (widget.user.id == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Error: ID Kontak tidak ditemukan untuk dihapus.'),
+          content: Text('Error: ID not found.'),
           backgroundColor: Colors.red,
         ),
       );
       return;
     }
 
-    // Tampilkan dialog konfirmasi sebelum menghapus
+    // konfirmasi menghapus contact
     final bool? confirmDelete = await showDialog<bool>(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Konfirmasi Hapus'),
+          // bagian dialog konfirmasi delete
+          title: const Text('Confirm Delete'),
           content: Text(
-            'Apakah Anda yakin ingin menghapus kontak ${widget.user.firstName} ${widget.user.lastName}?',
+            'Are you sure you want to delete ${widget.user.firstName} ${widget.user.lastName}?',
           ),
           actions: <Widget>[
             TextButton(
-              child: const Text('Batal'),
+              child: const Text('Cancel'),
               onPressed: () {
-                Navigator.of(context).pop(false); // Tidak jadi hapus
+                // jika cancle maka menutup dialog
+                Navigator.of(context).pop(false);
               },
             ),
             TextButton(
               style: TextButton.styleFrom(foregroundColor: Colors.red),
-              child: const Text('Hapus'),
+              child: const Text('Delete'),
               onPressed: () {
-                Navigator.of(context).pop(true); // Ya, hapus
+                // jika delete maka menutup dialog dan delete
+                Navigator.of(context).pop(true);
               },
             ),
           ],
@@ -154,35 +168,38 @@ class _EditContactPageState extends State<EditContactPage> {
       },
     );
 
+    // jika confirm delete
     if (confirmDelete == true) {
       setState(() {
         _isDeleting = true;
       });
       try {
+        // menghapus data
         await _firestore
             .collection(_collectionName)
             .doc(widget.user.id)
             .delete();
-        widget.onContactAltered(); // Panggil callback
+        // memanggil fungsi onContactAltered
+        widget.onContactAltered();
 
         if (mounted) {
-          // Kembali dua kali untuk menutup halaman edit dan dialog (jika ada)
-          // atau kembali ke daftar kontak utama
+          // jika berhasil maka kembali ke halaman sebelumnya
           int popCount = 0;
           Navigator.of(context).popUntil((_) => popCount++ >= 1);
 
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('Kontak berhasil dihapus!'),
-              backgroundColor: Colors.orange, // Warna berbeda untuk delete
+              content: Text('Contact Deleted Successfully'),
+              backgroundColor: Colors.orange,
             ),
           );
         }
       } catch (e) {
         if (mounted) {
+          // jika gagal mengdelete maka tampilkan snackbar
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Gagal menghapus kontak: $e'),
+              content: Text('Failed to delete contact: $e'),
               backgroundColor: Colors.red,
             ),
           );
@@ -197,6 +214,7 @@ class _EditContactPageState extends State<EditContactPage> {
     }
   }
 
+  // bagian menampilkan edit contact
   @override
   Widget build(BuildContext context) {
     // Tombol Save atau Delete tidak aktif jika salah satu proses sedang berjalan
@@ -204,9 +222,11 @@ class _EditContactPageState extends State<EditContactPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Edit ${widget.user.firstName}'), // Judul dinamis
+        // bagian appbar mengatur title, jarak, warna, dan sizebox
+        title: Text('Edit ${widget.user.firstName}'),
         actions: [
           if (_isSaving)
+            // jika melakuakn saving
             const Padding(
               padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
               child: SizedBox(
@@ -219,6 +239,7 @@ class _EditContactPageState extends State<EditContactPage> {
               ),
             )
           else
+            // jikia tidak
             Padding(
               padding: const EdgeInsets.symmetric(
                 horizontal: 8.0,
@@ -229,7 +250,6 @@ class _EditContactPageState extends State<EditContactPage> {
                 style: TextButton.styleFrom(
                   foregroundColor: Theme.of(context).colorScheme.onPrimary,
                   backgroundColor: Theme.of(context).colorScheme.primary,
-                  // ... (kode style lainnya)
                 ),
                 child: const Text('SAVE'),
               ),
@@ -237,6 +257,7 @@ class _EditContactPageState extends State<EditContactPage> {
         ],
       ),
       body: SingleChildScrollView(
+        // bagian body mengatur form, padding, jarak
         padding: const EdgeInsets.all(16.0),
         child: Form(
           key: _formKey,
@@ -249,30 +270,33 @@ class _EditContactPageState extends State<EditContactPage> {
                 child: Icon(Icons.person, size: 60),
               ),
               const SizedBox(height: 30),
+
               TextFormField(
                 controller: _firstNameController,
                 decoration: const InputDecoration(
-                  labelText: 'Nama Depan',
+                  labelText: 'First Name',
                   border: OutlineInputBorder(),
                   prefixIcon: Icon(Icons.person_outline),
                 ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Nama depan tidak boleh kosong';
+                    return 'First Name cannot be empty';
                   }
                   return null;
                 },
               ),
               const SizedBox(height: 16),
+
               TextFormField(
                 controller: _lastNameController,
                 decoration: const InputDecoration(
-                  labelText: 'Nama Belakang',
+                  labelText: 'Last Name',
                   border: OutlineInputBorder(),
                   prefixIcon: Icon(Icons.person_outline),
                 ),
               ),
               const SizedBox(height: 16),
+
               TextFormField(
                 controller: _emailController,
                 decoration: const InputDecoration(
@@ -283,33 +307,38 @@ class _EditContactPageState extends State<EditContactPage> {
                 keyboardType: TextInputType.emailAddress,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Email tidak boleh kosong';
+                    return 'Email cannot be empty';
                   }
+
+                  // bagian validasai email
                   if (!RegExp(
                     r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+",
                   ).hasMatch(value)) {
-                    return 'Format email tidak valid';
+                    return 'Email not valid';
                   }
                   return null;
                 },
               ),
               const SizedBox(height: 16),
+
               TextFormField(
                 controller: _phoneController,
                 decoration: const InputDecoration(
-                  labelText: 'Nomor Telepon',
+                  labelText: 'Phone Number',
                   border: OutlineInputBorder(),
                   prefixIcon: Icon(Icons.phone_outlined),
                 ),
                 keyboardType: TextInputType.phone,
               ),
-              const SizedBox(height: 32), // Jarak sebelum tombol delete
+
+              // Jarak antara button delete dan form
+              const SizedBox(height: 32),
               if (_isDeleting)
                 const Center(child: CircularProgressIndicator())
               else
                 FilledButton.icon(
                   icon: const Icon(Icons.delete_forever_outlined),
-                  label: const Text('Hapus Kontak Ini'),
+                  label: const Text('Delete This Contact'),
                   onPressed: buttonsEnabled ? _deleteContact : null,
                   style: FilledButton.styleFrom(
                     backgroundColor: Theme.of(context).colorScheme.error,

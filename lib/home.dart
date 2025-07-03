@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+// mengimport package material dan cloud_firestore
+
 import 'user.dart';
 import 'contact.dart';
-import 'add_contact.dart'; // Pastikan ini diimport untuk navigasi
+import 'add_contact.dart';
+// mengimport file user, add_contact, dan contact
 
+// halaman homepage untuk menampilkan daftar kontak dengna memanggil class _HomePageState
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
@@ -11,27 +15,33 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => _HomePageState();
 }
 
+// class _HomePageState untuk menampilkan daftar kontak
 class _HomePageState extends State<HomePage> {
+  // varibel untuk menampilkan daftar kontak sesaui filter atau seacrh
   List<User> _users = [];
   List<User> _filteredUsers = [];
   final TextEditingController _searchController = TextEditingController();
   bool _isLoading = true;
   String _errorMessage = '';
 
+  // variabel untuk floating action button
   final bool _showFab = true;
   final bool _showNotch = true;
 
+  // instansiasi firestore dengan nama collection yang sama dengan firestone
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  // ! PENTING: Ganti 'users' di bawah ini jika nama koleksi Anda di Firestore berbeda!
   final String _collectionName = 'contacts';
 
+  //untuk mengambil data dari firestore ke homepage
   @override
   void initState() {
     super.initState();
     _fetchUsersFromFirestore();
     _searchController.addListener(_filterUsers);
+    // menambahkan listener ke search bar
   }
 
+  // untuk menghapus listener
   @override
   void dispose() {
     _searchController.removeListener(_filterUsers);
@@ -39,16 +49,20 @@ class _HomePageState extends State<HomePage> {
     super.dispose();
   }
 
+  // bagian untuk mengambil data dari firestone
   Future<void> _fetchUsersFromFirestore() async {
+    // menampilkan loading
     setState(() {
       _isLoading = true;
       _errorMessage = '';
     });
 
+    // mengambil data dengan try catch
     try {
       QuerySnapshot querySnapshot =
           await _firestore.collection(_collectionName).get();
 
+      // mengecek apakah data tidak kosong
       if (querySnapshot.docs.isNotEmpty) {
         List<User> tempUsers = [];
         for (var doc in querySnapshot.docs) {
@@ -58,18 +72,18 @@ class _HomePageState extends State<HomePage> {
               User user = User.fromFirestore(data, doc.id);
               tempUsers.add(user);
             } catch (e) {
-              // Pertimbangkan logging error yang lebih formal di production
-              // misalnya menggunakan package logging atau Firebase Crashlytics
-              // print("Error mapping document ${doc.id}: $e");
+              // menampilkan text error
             }
           }
         }
 
+        // untuk mengurutkan data
         if (tempUsers.isNotEmpty) {
           tempUsers.sort(
             (a, b) =>
                 a.firstName.toLowerCase().compareTo(b.firstName.toLowerCase()),
           );
+          // mengupdate data baru
           setState(() {
             _users = tempUsers;
             _filteredUsers = _users;
@@ -77,15 +91,17 @@ class _HomePageState extends State<HomePage> {
             _errorMessage = '';
           });
         } else {
+          // ketika error karena data tidak valid atau tipe datanya berbeda dengan firestone
           setState(() {
             _errorMessage =
-                'Tidak ada data kontak valid yang dapat ditampilkan. Periksa format data di Firestore.';
+                'Tidak ada data kontak valid yang dapat ditampilkan.';
             _isLoading = false;
             _users = [];
             _filteredUsers = [];
           });
         }
       } else {
+        // ketika data kosong
         setState(() {
           _errorMessage =
               "Tidak ada data kontak ditemukan di database untuk koleksi '$_collectionName'.";
@@ -95,6 +111,7 @@ class _HomePageState extends State<HomePage> {
         });
       }
     } catch (e) {
+      // error handling jika terjadi kesalahan pada saat mengambil data atau konksi bermasalah pada firebase
       setState(() {
         _errorMessage =
             'Terjadi kesalahan saat mengambil data: $e. Periksa koneksi dan konfigurasi Firebase.';
@@ -105,6 +122,7 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
+  // untuk mencari kontak berdasarkan nama, email, atua nomor
   void _filterUsers() {
     final query = _searchController.text.toLowerCase();
     setState(() {
@@ -120,6 +138,7 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
+  // untuk pindah ke page add contact
   void _navigateToAddContactPage() {
     Navigator.push(
       context,
@@ -134,9 +153,11 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  // bagian menampilkan kontak
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      // bagian appbar mengatur jarak, border, search bar, warna, dan icon
       appBar: AppBar(
         title: const Text(
           'Contact',
@@ -170,7 +191,10 @@ class _HomePageState extends State<HomePage> {
           ),
         ),
       ),
+
+      // baigan body
       body:
+          // bagian loading jika data sedang di load dan mengatur jarak dan font size
           _isLoading
               ? const Center(child: CircularProgressIndicator())
               : _errorMessage.isNotEmpty
@@ -187,12 +211,15 @@ class _HomePageState extends State<HomePage> {
                   ),
                 ),
               )
+              // bagian refresh jika data telah di load
               : RefreshIndicator(
                 onRefresh: _fetchUsersFromFirestore,
                 child:
+                    // ketika mencari data berdasarkan nama, email, atau nomor
                     _filteredUsers.isEmpty && !_isLoading
                         ? Center(
                           child: Text(
+                            // jika data tida ada
                             _searchController.text.isEmpty
                                 ? 'Tidak ada kontak untuk ditampilkan.'
                                 : 'Tidak ada hasil untuk "${_searchController.text}".',
@@ -200,6 +227,7 @@ class _HomePageState extends State<HomePage> {
                           ),
                         )
                         : ListView.builder(
+                          // mengatur jarak, padding, dan item count
                           padding: const EdgeInsets.only(
                             top: 8.0,
                             bottom: 88.0,
@@ -214,12 +242,15 @@ class _HomePageState extends State<HomePage> {
                           },
                         ),
               ),
+
+      // bagian floating button tambah contact
       floatingActionButton:
+          // mengatur floating button dan icon dan ketika di klik bisa berpindah kehalaan add contact
           _showFab
               ? FloatingActionButton(
                 onPressed:
                     _navigateToAddContactPage, // Menggunakan fungsi navigasi
-                tooltip: 'Tambah Kontak',
+                tooltip: 'Add Contact',
                 child: const Icon(Icons.add),
               )
               : null,
@@ -231,6 +262,7 @@ class _HomePageState extends State<HomePage> {
   }
 }
 
+// bagian bottom app bar
 class _HomeBottomAppBar extends StatelessWidget {
   const _HomeBottomAppBar({this.shape = const CircularNotchedRectangle()});
 
@@ -238,14 +270,13 @@ class _HomeBottomAppBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // mengatur warna bottom app bar
     final colorScheme = Theme.of(context).colorScheme;
-    final bool isLightMode = Theme.of(context).brightness == Brightness.light;
-    Color bottomAppBarColor = colorScheme.surface;
-    Color transparentBottomAppBarColor = bottomAppBarColor.withOpacity(0.9);
 
     return BottomAppBar(
+      // mengatur warna bottom app bar, bentuk, jarak dna icon
       shape: shape,
-      color: transparentBottomAppBarColor,
+      color: colorScheme.surfaceContainer,
       elevation: 0,
       height: 64,
       child: IconTheme(
@@ -271,7 +302,7 @@ class _HomeBottomAppBar extends StatelessWidget {
                   color: Theme.of(context).colorScheme.onPrimaryContainer,
                 ),
                 onPressed: () {
-                  // Mungkin tidak perlu aksi jika sudah di halaman ini
+                  // belum ada
                 },
               ),
             ),

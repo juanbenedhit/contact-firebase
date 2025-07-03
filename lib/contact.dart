@@ -1,17 +1,25 @@
-// mengimport material dari fluttter dan file user.dart
 import 'package:flutter/material.dart';
+// mengimport material dari fluttter dan file user.dart
+
 import 'user.dart';
 import 'edit_contact.dart';
+// mengimport file user dan edit contact
 
+// bagian widget untuk menampilkan kontak
 class ContactTile extends StatelessWidget {
   final User user;
-  final VoidCallback onContactAltered; // Callback untuk refresh di HomePage
+
+  // Callback untuk refresh di HomePage
+  final VoidCallback onContactAltered;
+
+  // constructor
   const ContactTile({
     super.key,
     required this.user,
     required this.onContactAltered,
   });
 
+  // menampilkan informasi kontak dengan mencari inisial dari nama depan dan nama belakang
   @override
   Widget build(BuildContext context) {
     String getInitials(String firstName, String lastName) {
@@ -22,22 +30,21 @@ class ContactTile extends StatelessWidget {
       } else if (lastName.isNotEmpty) {
         return lastName[0].toUpperCase();
       }
-      //mencari insial dari nama lengkap
       return '';
     }
 
+    // menampilkan informasi kontak
     return Card(
+      // mengatur margin, shape, dan shadow
       margin: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
-      // memberikan margin pada bagian card
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12.0),
-        // memberikan efek round untuk bagian card
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
       elevation: 0,
-      // menghiilangkan shadow pada bagian card
+
+      // bagian list
       child: ListTile(
-        // menampilkan informasi kontak dengan list
+        // mengatur tampilan list contact
         leading: CircleAvatar(
+          // menampilkan profile picture didapatkan dari inisial
           backgroundColor: Theme.of(context).colorScheme.primaryContainer,
           child: Text(
             getInitials(user.firstName, user.lastName),
@@ -46,23 +53,22 @@ class ContactTile extends StatelessWidget {
               fontWeight: FontWeight.bold,
             ),
           ),
-        ), // menampilkan profile picture sebagai inisial dari naam dengan warna background, dana font bold
+        ),
 
-        title: Text(
-          '${user.firstName} ${user.lastName}',
-        ), // Tampilkan nama lengkap dengan cara menggabungkan nama depan dan nama belaakng
+        // menampilkan nama lengkap
+        title: Text('${user.firstName} ${user.lastName}'),
+        // menampilkan email
+        subtitle: Text(user.email),
 
-        subtitle: Text(user.email), // menampilkan email
+        // ketika mengeklik list contact akan berpindah ke edit contact
         onTap: () {
-          // GANTI SNACKBAR DENGAN NAVIGASI KE EditContactPage
           Navigator.push(
             context,
             MaterialPageRoute(
               builder:
                   (context) => EditContactPage(
-                    user: user, // Kirim data user yang dipilih
-                    onContactAltered:
-                        onContactAltered, // Teruskan callback ke EditContactPage
+                    user: user,
+                    onContactAltered: onContactAltered,
                   ),
             ),
           );

@@ -1,12 +1,13 @@
-// Model untuk data pengguna/kontak
 class User {
-  final String? id; // ID dokumen dari Firestore
+  // membuat objek user menggunakan data dari firestone
+  final String? id;
   final String firstName;
   final String lastName;
   final String email;
   final String? phone;
   final String? ownerId;
 
+  // construktror untuk objek user
   User({
     this.id,
     required this.firstName,
@@ -16,13 +17,15 @@ class User {
     this.ownerId,
   });
 
-  // Factory method untuk membuat objek User dari Map data Firestore
+  // method untuk mengubah data dari firestore ke objek user
   factory User.fromFirestore(Map<String, dynamic> data, String documentId) {
-    // Baca 'phone' sebagai num? lalu konversi ke String?
-    dynamic phoneData = data['phone']; // Ambil data phone apa adanya dulu
+    // mengubah phone menjadi string jika ada
+    dynamic phoneData = data['phone'];
     String? phoneNumber;
     if (phoneData != null) {
-      phoneNumber = phoneData.toString(); // Konversi ke String jika tidak null
+      phoneNumber =
+          phoneData
+              .toString(); // Konversi ke String jika tidak null agar nantinya bisa di cari
     }
 
     return User(
@@ -31,7 +34,7 @@ class User {
       lastName: data['lastName'] ?? '',
       email: data['email'] ?? '',
       phone: phoneNumber,
-      ownerId: data['ownerId'] as String?, // 'ownerId' bisa null
+      ownerId: data['ownerId'] as String?,
     );
   }
 

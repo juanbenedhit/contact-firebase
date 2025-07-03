@@ -1,22 +1,30 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+// mengimport package material dan cloud firestore
 
+// Callback agar tahu ada perubahan
 typedef ContactSavedCallback = void Function();
 
+// class addcontact
 class AddContactPage extends StatefulWidget {
   final ContactSavedCallback onContactSaved;
 
+  // constructor
   const AddContactPage({super.key, required this.onContactSaved});
 
   @override
   State<AddContactPage> createState() => _AddContactPageState();
 }
 
+// class addcontact state
 class _AddContactPageState extends State<AddContactPage> {
+  // koneksi dengan firebase
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final String _collectionName =
-      'contacts'; // Sesuaikan jika nama koleksi berbeda
 
+  // Nama koleksi di Firestore
+  final String _collectionName = 'contacts';
+
+  // variabel untuk form
   final _formKey = GlobalKey<FormState>();
   final _firstNameController = TextEditingController();
   final _lastNameController = TextEditingController();
@@ -27,6 +35,7 @@ class _AddContactPageState extends State<AddContactPage> {
 
   @override
   void dispose() {
+    // membersihkan controller
     _firstNameController.dispose();
     _lastNameController.dispose();
     _emailController.dispose();
@@ -34,52 +43,53 @@ class _AddContactPageState extends State<AddContactPage> {
     super.dispose();
   }
 
+  // fungsi untuk menyimpan kontak
   Future<void> _saveContact() async {
+    // Jika tidak valid tidak melakukan apa apa
     if (!_formKey.currentState!.validate()) {
-      return; // Jika form tidak valid, jangan lakukan apa-apa
+      return;
     }
 
+    // menampilkan loading
     setState(() {
       _isSaving = true;
     });
 
+    // menambahkan data
     try {
-      String phoneText = _phoneController.text.trim();
-      num? phoneNumberForFirestore;
-      if (phoneText.isNotEmpty) {
-        phoneNumberForFirestore = num.tryParse(phoneText);
-      }
-
       await _firestore.collection(_collectionName).add({
         'firstName': _firstNameController.text.trim(),
         'lastName': _lastNameController.text.trim(),
         'email': _emailController.text.trim(),
-        'phone': phoneNumberForFirestore,
-        'ownerId': "user_tes_123", // Sesuai permintaan Anda
+        'phone': _phoneController.text.trim(),
+        'ownerId': "user_tes_123",
       });
 
-      widget.onContactSaved(); // Panggil callback
+      widget.onContactSaved();
 
       if (mounted) {
-        Navigator.of(context).pop(); // Tutup halaman tambah kontak
+        // jika berhasil maka menutup dialog dan menampilkan snackbar
+        Navigator.of(context).pop();
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Kontak Berhasil Dibuat!'),
+            content: Text('Contact Added Successfully'),
             backgroundColor: Colors.green,
           ),
         );
       }
     } catch (e) {
       if (mounted) {
+        // jika gagal maka menampilkan snackbar
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Gagal membuat kontak. Error: $e'),
+            content: Text('Failed to add contact. Error: $e'),
             backgroundColor: Colors.red,
           ),
         );
       }
     } finally {
       if (mounted) {
+        // menyembunyikan loading
         setState(() {
           _isSaving = false;
         });
@@ -87,11 +97,13 @@ class _AddContactPageState extends State<AddContactPage> {
     }
   }
 
+  // bagian menampilkan kontak
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Tambah Kontak Baru'),
+        // bagian appbar mengatur title, padding, warnam jarak
+        title: const Text('Add Contact'),
         actions: [
           _isSaving
               ? const Padding(
@@ -115,13 +127,14 @@ class _AddContactPageState extends State<AddContactPage> {
                   style: TextButton.styleFrom(
                     foregroundColor: Theme.of(context).colorScheme.onPrimary,
                     backgroundColor: Theme.of(context).colorScheme.primary,
-                    // ... (kode style lainnya)
                   ),
                   child: const Text('SAVE'),
                 ),
               ),
         ],
       ),
+
+      // bagian body mengatur padding, jarak, form,
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Form(
@@ -135,30 +148,33 @@ class _AddContactPageState extends State<AddContactPage> {
                 child: Icon(Icons.person, size: 60),
               ),
               const SizedBox(height: 30),
+
               TextFormField(
                 controller: _firstNameController,
                 decoration: const InputDecoration(
-                  labelText: 'Nama Depan',
+                  labelText: 'First Name',
                   border: OutlineInputBorder(),
                   prefixIcon: Icon(Icons.person_outline),
                 ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Nama depan tidak boleh kosong';
+                    return 'First Name cannot be empty';
                   }
                   return null;
                 },
               ),
               const SizedBox(height: 16),
+
               TextFormField(
                 controller: _lastNameController,
                 decoration: const InputDecoration(
-                  labelText: 'Nama Belakang',
+                  labelText: 'Last Name',
                   border: OutlineInputBorder(),
                   prefixIcon: Icon(Icons.person_outline),
                 ),
               ),
               const SizedBox(height: 16),
+
               TextFormField(
                 controller: _emailController,
                 decoration: const InputDecoration(
@@ -169,8 +185,10 @@ class _AddContactPageState extends State<AddContactPage> {
                 keyboardType: TextInputType.emailAddress,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Email tidak boleh kosong';
+                    return 'Email cannot be empty';
                   }
+
+                  // bagian validasai email
                   if (!RegExp(
                     r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+",
                   ).hasMatch(value)) {
@@ -180,10 +198,11 @@ class _AddContactPageState extends State<AddContactPage> {
                 },
               ),
               const SizedBox(height: 16),
+
               TextFormField(
                 controller: _phoneController,
                 decoration: const InputDecoration(
-                  labelText: 'Nomor Telepon',
+                  labelText: 'Phone Number',
                   border: OutlineInputBorder(),
                   prefixIcon: Icon(Icons.phone_outlined),
                 ),
